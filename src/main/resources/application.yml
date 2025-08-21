@@ -19,5 +19,12 @@ ocr:
     url: ${CLOVA_OCR_URL}
     secret: ${CLOVA_OCR_SECRET}
 
+kumdori:
+  xp:
+    weights:
+      FRANCHISE: 0.6
+      LOCAL: 1.0
+      MARKET: 2.0
+
 server:
   port: 8082
