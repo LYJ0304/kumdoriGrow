@@ -1,0 +1,9 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8087:8082"   # 외부:내부
+    env_file:
+      - ./.env
+    environment:
+      - SERVER_PORT=8082

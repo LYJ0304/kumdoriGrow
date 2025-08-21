@@ -37,6 +37,8 @@ public class ClovaOcrClient {
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
             headers.add("X-OCR-SECRET", props.secret());
 
+            log.info("[ClovaOcrClient] Using OCR URL = {}", props.url());
+
             Map<String, Object> msg = new HashMap<>();
             msg.put("version", "V2");
             msg.put("requestId", UUID.randomUUID().toString());
