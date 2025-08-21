@@ -1,9 +1,31 @@
+version: "3.9"
+
 services:
-  app:
-    build: .
+  mysql:
+    image: mysql:8.0
+    container_name: kumdori-mysql
+    restart: unless-stopped
     ports:
-      - "8087:8082"   # 외부:내부
-    env_file:
-      - ./.env
+      - "${MYSQL_PORT}:3306"
     environment:
-      - SERVER_PORT=8082
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${DB_NAME}"
+      MYSQL_USER: "${DB_USER}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      TZ: "${TZ}"
+    command: >
+      mysqld
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_0900_ai_ci
+      --default-time-zone=${TZ}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init:/docker-entrypoint-initdb.d:ro   # 01_schema.sql 자동 실행(볼륨이 비어있을 때만)
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  mysql-data:
