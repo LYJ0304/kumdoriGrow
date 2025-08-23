@@ -1,36 +1,89 @@
-name: Build and Push Docker image
+name: Build & Deploy to EC2
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write    # GHCR 푸시 권한
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: Build with Gradle
-        run: ./gradlew clean build -x test
-
-      - name: Log in to GitHub Container Registry
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ secrets.GHCR_USERNAME }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          username: ${{ secrets.GHCR_USERNAME }}   # ex) lyj0304
+          password: ${{ secrets.GHCR_TOKEN }}      # PAT(최소 write:packages)
 
-      - name: Build and push
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & Push (amd64)
         uses: docker/build-push-action@v6
         with:
-          context: .                   # ✅ Dockerfile이 루트에 있으므로 현재 디렉토리
-          file: ./Dockerfile           # ✅ 루트에 있는 Dockerfile
+          context: .
+          file: ./Dockerfile
           push: true
-          platforms: linux/amd64
-          tags: ghcr.io/lyj0304/kumdorigrow:latest
+          platforms: linux/amd64               # EC2 x86이면 이게 가장 간단
+          tags: ghcr.io/${{ secrets.GHCR_USERNAME }}/kumdorigrow:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Add EC2 host to known_hosts
+        run: ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}   # PEM 전체 내용
+
+      - name: Sync docker-compose.yml to EC2
+        run: |
+          scp -o StrictHostKeyChecking=no \
+            docker-compose.yml \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ec2-user/apps/kumdori/docker-compose.yml
+
+      # (선택) 서버의 .env도 레포에서 관리하고 싶으면 위와 동일하게 업로드 가능
+      # 단, 보안상 추천 X. 서버에 이미 존재한다고 가정.
+
+      - name: Deploy on EC2 (pull & up)
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          set -euo pipefail
+          cd /home/ec2-user/apps/kumdori
+
+          # Nginx 설정 체크(선택)
+          sudo nginx -t && sudo systemctl reload nginx || true
+
+          # GHCR 로그인 (패키지가 Private이면 필수)
+          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+
+          # 최신 이미지 받기 & 기동
+          docker compose pull
+          docker compose up -d
+
+          # 정리
+          docker image prune -f || true
+
+          # 짧은 헬스 확인 (Actuator 없으면 200/404만 확인)
+          set +e
+          curl -sS -m 5 -I http://127.0.0.1:8082/ || true
+          curl -sS -m 5 http://127.0.0.1:8082/actuator/health || true
+          set -e
+          EOF
