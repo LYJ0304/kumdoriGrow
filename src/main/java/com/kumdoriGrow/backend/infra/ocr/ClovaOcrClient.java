@@ -32,6 +32,12 @@ public class ClovaOcrClient {
     private final OcrProperties props;
 
     public OcrResult request(MultipartFile file) {
+        // OCR 설정이 없으면 빈 결과 반환 (null-safe 처리)
+        if (props.url().isEmpty() || props.secret().isEmpty()) {
+            log.warn("[ClovaOcrClient] OCR is not configured properly. URL or Secret is empty.");
+            return new OcrResult(); // 빈 결과 객체 반환
+        }
+        
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);

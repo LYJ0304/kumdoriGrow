@@ -1,13 +1,11 @@
 package com.kumdoriGrow.backend.config;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
-@EnableConfigurationProperties(OcrProperties.class)
 public class RestClientConfig {
     @Bean
     public RestTemplate restTemplate() {
