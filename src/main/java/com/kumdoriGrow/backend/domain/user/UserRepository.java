@@ -1,7 +1,8 @@
-package com.kumdoriGrow.backend.domain.receipt;
+package com.kumdoriGrow.backend.domain.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.kumdoriGrow.backend.domain.user.User;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 }
