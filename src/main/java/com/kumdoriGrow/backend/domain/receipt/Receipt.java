@@ -44,6 +44,12 @@ public class Receipt {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
+    @Column(name = "matched_store_id")
+    private Long matchedStoreId;
+
+    @Column(name = "store_name_confidence")
+    private Double storeNameConfidence;
+
     // --- getter/setter ---
     public Long getId() { return id; }
     public Long getUserId() { return userId; }
@@ -66,4 +72,8 @@ public class Receipt {
     public void setRecognizedAt(Instant recognizedAt) { this.recognizedAt = recognizedAt; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public Long getMatchedStoreId() { return matchedStoreId; }
+    public void setMatchedStoreId(Long matchedStoreId) { this.matchedStoreId = matchedStoreId; }
+    public Double getStoreNameConfidence() { return storeNameConfidence; }
+    public void setStoreNameConfidence(Double storeNameConfidence) { this.storeNameConfidence = storeNameConfidence; }
 }
