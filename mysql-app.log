@@ -1,0 +1,86 @@
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :resolveMainClassName UP-TO-DATE
+
+> Task :bootRun
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.4)
+
+2025-08-23T17:13:16.499+09:00  INFO 47396 --- [           main] m.p.springdotenv.DotenvPropertySource    : Initializing Dotenv with DotenvConfig{directory=null, filename=null, ignoreIfMalformed=false, ignoreIfMissing=true, systemProperties=false, prefix=null}
+2025-08-23T17:13:16.509+09:00  INFO 47396 --- [           main] c.k.b.kumdoriGrowBackendApplication      : Starting kumdoriGrowBackendApplication using Java 21.0.8 with PID 47396 (/Users/iyeongjun/Desktop/kumdoriGrow/build/classes/java/main started by iyeongjun in /Users/iyeongjun/Desktop/kumdoriGrow)
+2025-08-23T17:13:16.509+09:00  INFO 47396 --- [           main] c.k.b.kumdoriGrowBackendApplication      : The following 1 profile is active: "prod"
+2025-08-23T17:13:16.921+09:00  INFO 47396 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-23T17:13:16.947+09:00  INFO 47396 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 20 ms. Found 2 JPA repository interfaces.
+2025-08-23T17:13:17.184+09:00  INFO 47396 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8082 (http)
+2025-08-23T17:13:17.192+09:00  INFO 47396 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-08-23T17:13:17.193+09:00  INFO 47396 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.43]
+2025-08-23T17:13:17.214+09:00  INFO 47396 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-08-23T17:13:17.215+09:00  INFO 47396 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 684 ms
+2025-08-23T17:13:17.333+09:00  INFO 47396 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-23T17:13:17.359+09:00  INFO 47396 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.22.Final
+2025-08-23T17:13:17.374+09:00  INFO 47396 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-08-23T17:13:17.512+09:00  INFO 47396 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-08-23T17:13:17.527+09:00  INFO 47396 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-08-23T17:13:17.618+09:00  INFO 47396 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@4e26564d
+2025-08-23T17:13:17.618+09:00  INFO 47396 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-08-23T17:13:17.643+09:00  WARN 47396 --- [           main] org.hibernate.orm.deprecation            : HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-08-23T17:13:17.651+09:00  INFO 47396 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0.43
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-08-23T17:13:18.034+09:00  INFO 47396 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-08-23T17:13:18.035+09:00  INFO 47396 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-08-23T17:13:18.150+09:00  INFO 47396 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-08-23T17:13:18.820+09:00  INFO 47396 --- [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:mysql://localhost:3306/kumdori_grow?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true'
+2025-08-23T17:13:18.831+09:00  INFO 47396 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2025-08-23T17:13:18.867+09:00  INFO 47396 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8082 (http) with context path '/'
+2025-08-23T17:13:18.875+09:00  INFO 47396 --- [           main] c.k.b.kumdoriGrowBackendApplication      : Started kumdoriGrowBackendApplication in 2.576 seconds (process running for 2.728)
+2025-08-23T17:13:39.151+09:00  INFO 47396 --- [nio-8082-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-08-23T17:13:39.152+09:00  INFO 47396 --- [nio-8082-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-08-23T17:13:39.160+09:00  INFO 47396 --- [nio-8082-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 7 ms
+2025-08-23T17:15:02.466+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@1e17c091 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:15:03.665+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@3944693c (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:15:07.255+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@4e26564d (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:15:07.405+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@197735cd (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:15:07.981+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@25af78e3 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:15:14.264+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@29011f12 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:15:14.421+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@136f1c75 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:15:14.620+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@4d59069b (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:15:17.058+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@6c8169ad (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:15:17.534+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@6be4301c (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:22:52.372+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@8305a1 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:22:56.813+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@62c07be5 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:23:06.161+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@28eec371 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:23:06.392+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@68dca929 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:23:33.405+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@9a2e884 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:23:41.965+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@248ccece (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:24:02.801+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@376c85e9 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:24:07.200+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@687c70a1 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:24:09.111+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@64100b3f (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:24:27.994+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@37809999 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:24:38.410+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@3731a8c8 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:24:48.703+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@60630349 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:24:48.956+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@7fbcc924 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:24:52.712+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@4cb4e925 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:27:29.598+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@3435d2b1 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:27:42.086+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@62925db1 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:27:42.870+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@133e86dc (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:27:55.817+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@1a395cee (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:27:56.086+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@4070d1c9 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:28:09.285+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@279fa77d (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:28:26.851+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@2a54caee (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:28:32.857+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@36924e5b (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:28:35.584+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@477b42de (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2025-08-23T17:28:46.063+09:00  WARN 47396 --- [l-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@4ed9f9cd (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
