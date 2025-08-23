@@ -10,7 +10,7 @@ concurrency:
 
 permissions:
   contents: read
-  packages: write    # GHCR 푸시 권한
+  packages: write  # GHCR 푸시 권한
 
 jobs:
   build-and-push:
@@ -35,41 +35,50 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          platforms: linux/amd64               # EC2 x86이면 이게 가장 간단
+          platforms: linux/amd64
           tags: ghcr.io/${{ secrets.GHCR_USERNAME }}/kumdorigrow:latest
 
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
+    env:
+      APP_DIR: /home/ec2-user/apps/kumdori   # 필요시 경로 수정 (ec2-user/ubuntu 맞게)
+      APP_PORT: 8080                         # 앱이 리슨하는 내부 포트(리버스 프록시/Compose에 맞게)
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Add EC2 host to known_hosts
-        run: ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+      # ~/.ssh 없어서 known_hosts에 쓰기 실패했던 문제 해결
+      - name: Prepare known_hosts
+        run: |
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> "$HOME/.ssh/known_hosts"
+          chmod 644 "$HOME/.ssh/known_hosts"
 
       - name: Start SSH agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_KEY }}   # PEM 전체 내용
 
+      - name: Ensure remote app directory
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "mkdir -p ${APP_DIR}"
+
       - name: Sync docker-compose.yml to EC2
         run: |
           scp -o StrictHostKeyChecking=no \
             docker-compose.yml \
-            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ec2-user/apps/kumdori/docker-compose.yml
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:${APP_DIR}/docker-compose.yml
 
-      # (선택) 서버의 .env도 레포에서 관리하고 싶으면 위와 동일하게 업로드 가능
-      # 단, 보안상 추천 X. 서버에 이미 존재한다고 가정.
+      # (선택) 서버의 .env도 레포에서 관리하려면 위 방식으로 업로드 가능
+      # 보안상 권장은 X. 서버에 이미 존재한다고 가정.
 
       - name: Deploy on EC2 (pull & up)
         run: |
           ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
           set -euo pipefail
-          cd /home/ec2-user/apps/kumdori
-
-          # Nginx 설정 체크(선택)
-          sudo nginx -t && sudo systemctl reload nginx || true
+          cd ${APP_DIR}
 
           # GHCR 로그인 (패키지가 Private이면 필수)
           echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
@@ -81,9 +90,9 @@ jobs:
           # 정리
           docker image prune -f || true
 
-          # 짧은 헬스 확인 (Actuator 없으면 200/404만 확인)
+          # 짧은 헬스 확인 (Actuator 노출 시)
           set +e
-          curl -sS -m 5 -I http://127.0.0.1:8082/ || true
-          curl -sS -m 5 http://127.0.0.1:8082/actuator/health || true
+          curl -sS -m 5 -I http://127.0.0.1:${APP_PORT}/ || true
+          curl -sS -m 5 http://127.0.0.1:${APP_PORT}/actuator/health || true
           set -e
           EOF
