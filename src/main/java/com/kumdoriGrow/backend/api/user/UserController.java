@@ -1,9 +1,12 @@
 package com.kumdoriGrow.backend.api.user;
 
+import com.kumdoriGrow.backend.api.user.dto.UserResponse;
 import com.kumdoriGrow.backend.domain.receipt.UserRepository;
 import com.kumdoriGrow.backend.domain.user.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -27,8 +30,9 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getUser(@PathVariable Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
+    public UserResponse getUser(@PathVariable Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        return UserResponse.from(user);
     }
 }
