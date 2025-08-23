@@ -76,9 +76,10 @@ jobs:
 
       - name: Deploy on EC2 (pull & up)
         run: |
-          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} <<EOF
           set -euo pipefail
-          cd ${APP_DIR}
+
+          cd "${{ env.APP_DIR }}"
 
           # GHCR 로그인 (패키지가 Private이면 필수)
           echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
@@ -92,7 +93,7 @@ jobs:
 
           # 짧은 헬스 확인 (Actuator 노출 시)
           set +e
-          curl -sS -m 5 -I http://127.0.0.1:${APP_PORT}/ || true
-          curl -sS -m 5 http://127.0.0.1:${APP_PORT}/actuator/health || true
+          curl -sS -m 5 -I "http://127.0.0.1:${{ env.APP_PORT }}/" || true
+          curl -sS -m 5 "http://127.0.0.1:${{ env.APP_PORT }}/actuator/health" || true
           set -e
           EOF
