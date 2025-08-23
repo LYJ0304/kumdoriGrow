@@ -1,8 +1,8 @@
 package com.kumdoriGrow.backend.api.user;
 
 import com.kumdoriGrow.backend.api.user.dto.UserResponse;
-import com.kumdoriGrow.backend.domain.receipt.UserRepository;
 import com.kumdoriGrow.backend.domain.user.User;
+import com.kumdoriGrow.backend.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

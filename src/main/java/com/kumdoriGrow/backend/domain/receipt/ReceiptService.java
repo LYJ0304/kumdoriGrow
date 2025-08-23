@@ -7,6 +7,7 @@ import com.kumdoriGrow.backend.api.receipt.dto.ReceiptResponse;
 import com.kumdoriGrow.backend.api.receipt.dto.XpRes;
 import com.kumdoriGrow.backend.domain.store.StoreMatchResult;
 import com.kumdoriGrow.backend.domain.store.StoreResolver;
+import com.kumdoriGrow.backend.domain.user.UserRepository;
 import com.kumdoriGrow.backend.infra.ocr.ClovaOcrClient;
 import com.kumdoriGrow.backend.infra.ocr.dto.OcrFieldModels;
 import com.kumdoriGrow.backend.infra.ocr.dto.OcrResult;
