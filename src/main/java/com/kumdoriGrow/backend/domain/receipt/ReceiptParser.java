@@ -1,9 +1,11 @@
 package com.kumdoriGrow.backend.domain.receipt;
 
+import org.springframework.stereotype.Component;
 import java.text.Normalizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Component
 public class ReceiptParser {
     public String extractStoreName(String raw) {
         if (raw == null || raw.isBlank()) return null;
