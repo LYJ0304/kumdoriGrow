@@ -36,9 +36,9 @@ flyway:
   enabled: false
 
 ocr:
-  clova:
-    url: ${CLOVA_OCR_URL}
-    secret: ${CLOVA_OCR_SECRET}
+  enabled: ${OCR_ENABLED:false}
+  api-url: ${CLOVA_OCR_URL:}
+  api-key: ${CLOVA_OCR_SECRET:}
 
 kumdori:
   xp:

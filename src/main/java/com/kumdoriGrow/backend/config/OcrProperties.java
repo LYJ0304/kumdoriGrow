@@ -2,18 +2,19 @@ package com.kumdoriGrow.backend.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "ocr.clova")
+@ConfigurationProperties(prefix = "ocr")
 public record OcrProperties(
-        String url,
-        String secret
+        boolean enabled,
+        String apiUrl,
+        String apiKey
 ) {
     public OcrProperties {
         // 기본값 설정 - null-safe 처리
-        if (url == null) {
-            url = "";
+        if (apiUrl == null) {
+            apiUrl = "";
         }
-        if (secret == null) {
-            secret = "";
+        if (apiKey == null) {
+            apiKey = "";
         }
     }
 }

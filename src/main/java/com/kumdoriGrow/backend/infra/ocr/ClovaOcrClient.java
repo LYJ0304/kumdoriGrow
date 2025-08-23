@@ -33,17 +33,18 @@ public class ClovaOcrClient {
 
     public OcrResult request(MultipartFile file) {
         // OCR 설정이 없으면 빈 결과 반환 (null-safe 처리)
-        if (props.url().isEmpty() || props.secret().isEmpty()) {
-            log.warn("[ClovaOcrClient] OCR is not configured properly. URL or Secret is empty.");
+        if (!props.enabled() || props.apiUrl().isEmpty() || props.apiKey().isEmpty()) {
+            log.warn("[ClovaOcrClient] OCR is disabled or not configured properly. enabled={}, apiUrl={}, apiKey={}", 
+                props.enabled(), props.apiUrl().isEmpty() ? "empty" : "configured", props.apiKey().isEmpty() ? "empty" : "configured");
             return new OcrResult(); // 빈 결과 객체 반환
         }
         
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-            headers.add("X-OCR-SECRET", props.secret());
+            headers.add("X-OCR-SECRET", props.apiKey());
 
-            log.info("[ClovaOcrClient] Using OCR URL = {}", props.url());
+            log.info("[ClovaOcrClient] Using OCR URL = {}", props.apiUrl());
 
             Map<String, Object> msg = new HashMap<>();
             msg.put("version", "V2");
@@ -67,7 +68,7 @@ public class ClovaOcrClient {
             body.add("file", filePart);
 
             HttpEntity<MultiValueMap<String, Object>> req = new HttpEntity<>(body, headers);
-            ResponseEntity<String> res = restTemplate.postForEntity(props.url(), req, String.class);
+            ResponseEntity<String> res = restTemplate.postForEntity(props.apiUrl(), req, String.class);
 
             if (!res.getStatusCode().is2xxSuccessful() || res.getBody() == null) {
                 throw new IllegalStateException("OCR API 실패: " + res.getStatusCode());
