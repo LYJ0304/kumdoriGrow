@@ -32,5 +32,5 @@ jobs:
           context: .                   # ✅ Dockerfile이 루트에 있으므로 현재 디렉토리
           file: ./Dockerfile           # ✅ 루트에 있는 Dockerfile
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           tags: ghcr.io/lyj0304/kumdorigrow:latest
