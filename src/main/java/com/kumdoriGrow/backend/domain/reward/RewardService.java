@@ -18,7 +18,9 @@ import java.util.*;
 public class RewardService {
     
     private final ReceiptRepository receiptRepository;
-    private final ObjectMapper objectMapper;
+    
+    // ObjectMapper는 직접 생성해서 사용 (의존성 주입 문제 방지)
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     
     // 포인트 박스 확률표 (가중치)
     private static final List<RewardWeight> REWARD_WEIGHTS = Arrays.asList(
