@@ -13,6 +13,7 @@ services:
       MYSQL_USER: "${DB_USER}"
       MYSQL_PASSWORD: "${DB_PASSWORD}"
       TZ: "${TZ}"
+
     command: >
       mysqld
       --character-set-server=utf8mb4
@@ -38,6 +39,9 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - DB_HOST=mysql # DB_HOST를 'mysql'로 설정하여 Docker 내부 통신을 보장
+      - OCR_ENABLED=${OCR_ENABLED}
+      - OCR_API_URL=${CLOVA_OCR_URL}
+      - OCR_API_KEY=${CLOVA_OCR_SECRET}
     depends_on:
       mysql:
         condition: service_healthy
