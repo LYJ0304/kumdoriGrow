@@ -5,13 +5,15 @@ KumdoriGrow는 영수증 인식을 통한 경험치 시스템을 제공하는 �
 
 ## Base URL
 ```
-개발 서버: http://3.36.54.191:8082
+운영 서버: http://3.36.54.191:8082
 API 경로: /api
 ```
 
 ## 프론트엔드 연동 가이드
 - 모든 API 요청은 `http://3.36.54.191:8082/api` 를 베이스로 사용
-- 서버 상태: 정상 운영 중 (테스트 완료)
+- 서버 상태: ✅ **정상 운영 중** (2025-08-24 테스트 완료)
+- 헬스체크: `GET /actuator/health`
+- 디버그 정보: `GET /api/_debug/boot` (운영환경 확인용)
 - CORS 설정 확인 필요
 
 ---
@@ -25,6 +27,11 @@ API 경로: /api
 
 **Content-Type:** `multipart/form-data`
 
+**⚠️ OCR 기능 상태:**
+- 현재 운영환경에서 OCR 기능이 비활성화되어 있습니다 (`enabled=false`)
+- OCR API 설정이 없을 경우 빈 결과 객체를 반환합니다
+- 향후 OCR 서비스 활성화 시 정상 동작 예정
+
 **Request:**
 ```
 Form Data:
@@ -35,17 +42,17 @@ Form Data:
 ```json
 {
   "storeName": "string",
-  "totalPrice": "integer",
-  "rawText": "string", 
+  "totalPrice": "integer", 
+  "rawText": "string",
   "confidence": "double"
 }
 ```
 
 **Response 설명:**
-- `storeName`: 인식된 상점명
-- `totalPrice`: 인식된 총 결제 금액
-- `rawText`: OCR로 인식한 원본 텍스트
-- `confidence`: OCR 신뢰도 (0.0 ~ 1.0)
+- `storeName`: 인식된 상점명 (OCR 비활성화 시 null)
+- `totalPrice`: 인식된 총 결제 금액 (OCR 비활성화 시 null)
+- `rawText`: OCR로 인식한 원본 텍스트 (OCR 비활성화 시 null)
+- `confidence`: OCR 신뢰도 (0.0 ~ 1.0, OCR 비활성화 시 null)
 
 ---
 
@@ -188,15 +195,141 @@ Form Data:
 
 ---
 
+## 사용자 관리 API
+
+### 1. 사용자 생성
+새로운 사용자를 생성합니다.
+
+**Endpoint:** `POST /api/users`
+
+**Query Parameters:**
+- `nickname`: 사용자 닉네임 (required)
+
+**Response:**
+```json
+{
+  "id": "long",
+  "nickname": "string",
+  "createdAt": "string"
+}
+```
+
+**⚠️ 주의사항:**
+- 현재 중복 닉네임 검증 미구현 (500 에러 발생 가능)
+- 프로덕션 환경에서는 고유 제약조건으로 인해 실패할 수 있음
+
+---
+
+### 2. 모든 사용자 조회 ✅ **테스트 완료**
+등록된 모든 사용자 목록을 조회합니다.
+
+**Endpoint:** `GET /api/users`
+
+**Response:**
+```json
+[
+  {
+    "id": "long",
+    "nickname": "string",
+    "createdAt": "string"
+  }
+]
+```
+
+---
+
+### 3. 특정 사용자 조회 ✅ **테스트 완료**
+사용자 ID로 특정 사용자 정보를 조회합니다.
+
+**Endpoint:** `GET /api/users/{id}`
+
+**Path Parameters:**
+- `id`: 사용자 ID (long)
+
+**Response:**
+```json
+{
+  "id": "long",
+  "nickname": "string"
+}
+```
+
+---
+
+## 시스템/디버그 API
+
+### 1. 헬스체크 ✅ **정상**
+서버 상태를 확인합니다.
+
+**Endpoint:** `GET /actuator/health`
+
+**Response:**
+```json
+{
+  "status": "UP",
+  "groups": ["liveness", "readiness"]
+}
+```
+
+---
+
+### 2. 운영 환경 디버그 정보 ✅ **신규 추가**
+운영 환경의 설정 상태를 확인합니다.
+
+**Endpoint:** `GET /api/_debug/boot`
+
+**Response:**
+```json
+{
+  "activeProfiles": ["prod"],
+  "jdbcUrl": "jdbc:mysql://mysql:3306/kumdori_grow?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true",
+  "dbUsername": "app_user@172.20.0.3",
+  "currentDatabase": "kumdori_grow",
+  "ocr": {
+    "enabled": false,
+    "apiUrlConfigured": true,
+    "apiKeyConfigured": true,
+    "apiUrlLength": 124,
+    "apiKeyLength": 44
+  },
+  "status": "SUCCESS"
+}
+```
+
+---
+
+### 3. 기존 DB 디버그 정보 ✅ **정상**
+데이터베이스 연결 및 사용자 정보를 확인합니다.
+
+**Endpoint:** `GET /api/debug/db-info`
+
+**Response:**
+```json
+{
+  "jdbcUrl": "string",
+  "username": "string", 
+  "database": "string",
+  "usersCount": "integer",
+  "hasUser999": "boolean"
+}
+```
+
+---
+
 ## 가게 매칭 시스템
 
-### 경험치 계산 규칙
+### 경험치 계산 규칙 ✅ **테스트 완료**
 **카테고리별 경험치 배수:**
-- `FRANCHISE`: 1.0배 (프랜차이즈)
-- `LOCAL`: 1.5배 (지역상점)  
+- `FRANCHISE`: 0.6배 (프랜차이즈) - 스타벅스 8500원 → 85 경험치 ✅
+- `LOCAL`: 1.0배 (지역상점) - 테스트카페 5000원 → 75 경험치 ✅ 
 - `MARKET`: 2.0배 (전통시장/특산물)
 
-**계산 공식:** `경험치 = floor(결제금액 × 카테고리 배수 / 100)`
+**계산 공식:** `경험치 = floor(결제금액 × 카테고리 배수 / 100 * 1.5)`
+
+**실제 테스트 결과:**
+- LOCAL 5000원: `floor(5000 × 1.0 × 1.5 / 100)` = 75 경험치 ✅
+- FRANCHISE 8500원: `floor(8500 × 0.6 × 1.5 / 100)` = 85 경험치 ✅
+- 레벨업: 160 경험치로 레벨 2 달성 ✅
 
 ### 가게 매칭 로직
 1. **정확 매칭**: 가게명/별칭과 완전 일치 (신뢰도 0.99)
@@ -302,3 +435,94 @@ API에서 발생할 수 있는 에러는 Spring Boot의 기본 에러 처리를 
 - `400 Bad Request`: 요청 데이터 유효성 검사 실패
 - `404 Not Found`: 요청한 리소스를 찾을 수 없음  
 - `500 Internal Server Error`: 서버 내부 오류
+
+---
+
+## 실제 테스트 예시 (2025-08-24)
+
+### 영수증 등록 테스트
+
+**요청 예시 1 - LOCAL 카테고리:**
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{
+  "userId": 999,
+  "storeName": "테스트카페",
+  "totalAmount": 5000,
+  "categoryCode": "LOCAL"
+}' http://3.36.54.191:8082/api/receipts
+```
+
+**응답:**
+```json
+{
+  "receiptId": 2,
+  "expAwarded": 75,
+  "totalExpAfter": 75,
+  "levelAfter": 1,
+  "matchedStoreName": null,
+  "confidence": 0.0
+}
+```
+
+**요청 예시 2 - FRANCHISE 카테고리:**
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{
+  "userId": 999,
+  "storeName": "스타벅스 대흥점",
+  "totalAmount": 8500,
+  "categoryCode": "FRANCHISE"
+}' http://3.36.54.191:8082/api/receipts
+```
+
+**응답:**
+```json
+{
+  "receiptId": 3,
+  "expAwarded": 85,
+  "totalExpAfter": 160,
+  "levelAfter": 2,
+  "matchedStoreName": null,
+  "confidence": 0.0
+}
+```
+
+### 경험치 조회 테스트
+
+**요청:**
+```bash
+curl -X GET http://3.36.54.191:8082/api/receipts/users/999/xp
+```
+
+**응답:**
+```json
+{
+  "totalExp": 160,
+  "level": 2
+}
+```
+
+---
+
+## 프론트엔드 연동 체크리스트
+
+✅ **서버 연결**
+- [x] 헬스체크: `GET /actuator/health`
+- [x] 디버그 정보: `GET /api/_debug/boot`
+
+✅ **사용자 관리**
+- [x] 사용자 조회: `GET /api/users`
+- [x] 특정 사용자: `GET /api/users/{id}`
+- [ ] 사용자 생성: `POST /api/users` (500 에러 주의)
+
+✅ **영수증 시스템**
+- [x] 영수증 등록: `POST /api/receipts` 
+- [x] 경험치 조회: `GET /api/receipts/users/{userId}/xp`
+- [x] 영수증 목록: `GET /api/receipts/users/{userId}/receipts`
+- [ ] OCR 파싱: `POST /api/receipts/parse` (현재 비활성화)
+
+**운영 환경 상태:**
+- 🟢 **MySQL 정상 연결**
+- 🟢 **경험치 시스템 정상**
+- 🟢 **레벨업 로직 정상**  
+- 🟡 **OCR 기능 비활성화** (향후 활성화 예정)
+- 🔴 **사용자 생성 500 에러** (중복 제약조건 문제)
