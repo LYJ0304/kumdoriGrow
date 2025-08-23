@@ -64,7 +64,8 @@ public class ExpCalculator {
         if (totalExp < 2000) return 4;
         if (totalExp < 5000) return 5;
         
-        // 5000 이상은 1000당 1레벨씩
-        return 5 + (int) ((totalExp - 5000) / 1000);
+        // 5000 이상은 1000당 1레벨씩, 최대 30레벨
+        int calculatedLevel = 5 + (int) ((totalExp - 5000) / 1000);
+        return Math.min(calculatedLevel, 30);
     }
 }
