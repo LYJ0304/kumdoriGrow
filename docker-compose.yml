@@ -28,7 +28,7 @@ services:
       retries: 20
 
   app:
-    image: ghcr.io/iyj0304/kumdorigrow:latest
+    image: ghcr.io/lyj0304/kumdorigrow:latest
     container_name: kumdori-app
     restart: unless-stopped
     env_file:
