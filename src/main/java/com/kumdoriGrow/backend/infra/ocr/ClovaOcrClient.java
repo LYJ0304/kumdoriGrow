@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.core.io.Resource;
@@ -68,14 +70,31 @@ public class ClovaOcrClient {
             body.add("file", filePart);
 
             HttpEntity<MultiValueMap<String, Object>> req = new HttpEntity<>(body, headers);
+            
+            // OCR 요청 정보 로깅
+            String format = guessExt(file);
+            boolean hasSecret = props.apiKey() != null && !props.apiKey().isEmpty();
+            int base64Length = file.getBytes().length;
+            log.info("[ClovaOcrClient] OCR Request - endpoint: {}, hasSecret: {}, format: {}, base64Length: {}", 
+                props.apiUrl(), hasSecret, format, base64Length);
+            
             ResponseEntity<String> res = restTemplate.postForEntity(props.apiUrl(), req, String.class);
 
             if (!res.getStatusCode().is2xxSuccessful() || res.getBody() == null) {
+                log.error("[ClovaOcrClient] OCR API returned non-2xx status: {}, body: {}", res.getStatusCode(), res.getBody());
                 throw new IllegalStateException("OCR API 실패: " + res.getStatusCode());
             }
             return om.readValue(res.getBody(), OcrResult.class);
+        } catch (HttpClientErrorException e) {
+            // 4xx 에러 - 클라이언트 요청 오류
+            log.warn("[ClovaOcrClient] Client error (4xx): {}, Response body: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw e; // 그대로 다시 던지기
+        } catch (HttpServerErrorException e) {
+            // 5xx 에러 - 서버 오류
+            log.error("[ClovaOcrClient] Server error (5xx): {}, Response body: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw e; // 그대로 다시 던지기
         } catch (Exception e) {
-            log.error("Clova OCR 호출 실패", e);
+            log.error("[ClovaOcrClient] Unexpected error during OCR call", e);
             throw new IllegalStateException("Clova OCR 호출 실패", e);
         }
     }

@@ -5,9 +5,12 @@ import com.kumdoriGrow.backend.api.receipt.dto.CreateReceiptReq;
 import com.kumdoriGrow.backend.api.receipt.dto.CreateReceiptRes;
 import com.kumdoriGrow.backend.api.receipt.dto.ReceiptResponse;
 import com.kumdoriGrow.backend.api.receipt.dto.XpRes;
+import com.kumdoriGrow.backend.config.OcrProperties;
 import com.kumdoriGrow.backend.domain.store.StoreMatchResult;
 import com.kumdoriGrow.backend.domain.store.StoreResolver;
 import com.kumdoriGrow.backend.domain.user.UserRepository;
+import com.kumdoriGrow.backend.infra.ocr.ClovaOcrClient;
+import com.kumdoriGrow.backend.infra.ocr.dto.OcrResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.transaction.Transactional;
@@ -27,6 +30,8 @@ public class ReceiptService {
     private final ExpCalculator expCalculator;
     private final UserRepository userRepository;
     private final StoreResolver storeResolver;
+    private final ClovaOcrClient ocrClient;
+    private final OcrProperties ocrProperties;
 
     // OCR 텍스트 기반 자동 가게 매칭 및 경험치 계산
     @Transactional
@@ -117,10 +122,69 @@ public class ReceiptService {
         return receiptRepository.findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(page, size));
     }
 
-    // OCR 처리(멀티파트) - 임시로 비활성화
+    // OCR 처리(멀티파트)
     public ReceiptResponse process(MultipartFile file) {
-        // OCR 기능 임시 비활성화 - 설정 문제로 인한 500 에러 방지
-        return new ReceiptResponse("임시_가게명", 5000, "임시_OCR_텍스트", 0.95);
+        // 1) 업로드 파일 정보 로깅
+        String filename = file.getOriginalFilename();
+        long fileSize = file.getSize();
+        String contentType = file.getContentType();
+        
+        log.info("[OCR] File received - filename: {}, size: {} bytes, contentType: {}", 
+                filename, fileSize, contentType);
+        
+        // 2) 파일 유효성 검사
+        if (file.isEmpty()) {
+            log.warn("[OCR] Empty file uploaded");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Empty or unsupported image");
+        }
+        
+        if (contentType == null || !isValidImageType(contentType)) {
+            log.warn("[OCR] Unsupported content type: {}", contentType);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Empty or unsupported image");
+        }
+        
+        // 3) OCR 비활성화 시 더미 응답 반환
+        if (!ocrProperties.enabled()) {
+            log.info("[OCR] OCR is disabled, returning dummy response");
+            return new ReceiptResponse("더미_가게명", 5000, "더미_OCR_텍스트", 0.95);
+        }
+        
+        try {
+            // 4) OCR 호출 전 로깅
+            String endpoint = ocrProperties.apiUrl();
+            boolean hasSecret = ocrProperties.apiKey() != null && !ocrProperties.apiKey().isEmpty();
+            String payloadFormat = "multipart";
+            long bytesLength = file.getSize();
+            
+            log.info("[OCR] Calling OCR API - endpoint: {}, hasSecret: {}, payloadFormat: {}, bytes: {}",
+                    endpoint, hasSecret, payloadFormat, bytesLength);
+            
+            // 5) OCR 실행
+            OcrResult ocrResult = ocrClient.request(file);
+            String ocrText = extractOcrText(ocrResult);
+            
+            log.info("[OCR] OCR processing completed successfully");
+            
+            // 임시 응답 (실제 가게 정보 파싱은 추후 구현)
+            return new ReceiptResponse("OCR_파싱됨", 0, ocrText, 1.0);
+            
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            // 6) 4xx 에러 처리
+            String responseBody = e.getResponseBodyAsString();
+            log.error("[OCR] OCR API returned 4xx error: {}, Response: {}", e.getStatusCode(), responseBody);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OCR request invalid");
+            
+        } catch (org.springframework.web.client.HttpServerErrorException e) {
+            // 7) 5xx 에러 처리
+            String responseBody = e.getResponseBodyAsString();
+            log.error("[OCR] OCR API returned 5xx error: {}, Response: {}", e.getStatusCode(), responseBody);
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "OCR service temporarily unavailable");
+            
+        } catch (Exception e) {
+            // 8) 기타 예외 처리
+            log.error("[OCR] Unexpected error during OCR processing", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not process image");
+        }
     }
 
 
@@ -149,5 +213,31 @@ public class ReceiptService {
             // 기본 경험치 계산 (amount / 100, 최소 1)
             return Math.max(1, (int) (amount / 100));
         }
+    }
+    
+    private boolean isValidImageType(String contentType) {
+        return contentType.startsWith("image/") && 
+               (contentType.contains("jpeg") || contentType.contains("jpg") || 
+                contentType.contains("png") || contentType.contains("gif") ||
+                contentType.contains("bmp") || contentType.contains("webp"));
+    }
+    
+    private String extractOcrText(OcrResult ocrResult) {
+        if (ocrResult == null || ocrResult.getImages() == null || ocrResult.getImages().isEmpty()) {
+            return "OCR 텍스트 추출 실패";
+        }
+        
+        StringBuilder text = new StringBuilder();
+        ocrResult.getImages().forEach(image -> {
+            if (image.getFields() != null) {
+                image.getFields().forEach(field -> {
+                    if (field.getInferText() != null && !field.getInferText().trim().isEmpty()) {
+                        text.append(field.getInferText()).append("\n");
+                    }
+                });
+            }
+        });
+        
+        return text.length() > 0 ? text.toString().trim() : "OCR 텍스트 없음";
     }
 }
