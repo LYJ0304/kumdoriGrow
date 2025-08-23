@@ -49,8 +49,8 @@ Form Data:
 
 ---
 
-### 2. 영수증 등록 및 경험치 지급
-파싱된 영수증 정보를 등록하고 사용자에게 경험치를 지급합니다.
+### 2. 영수증 등록 및 경험치 지급 (자동 가게 매칭)
+파싱된 영수증 정보를 등록하고 OCR 텍스트 기반 자동 가게 매칭을 통해 경험치를 지급합니다.
 
 **Endpoint:** `POST /api/receipts`
 
@@ -60,21 +60,27 @@ Form Data:
 ```json
 {
   "userId": "long",
-  "storeName": "string",
+  "storeName": "string",         // 선택사항 (OCR 매칭 실패시 사용)
   "totalAmount": "long", 
-  "categoryCode": "string",
+  "categoryCode": "string",      // 선택사항 (OCR 매칭 성공시 자동 설정)
   "imagePath": "string",
-  "ocrRaw": "string"
+  "ocrRaw": "string"            // OCR 원본 텍스트 (가게 매칭에 사용)
 }
 ```
 
 **Request 유효성 검사:**
 - `userId`: 필수, null 불가
-- `storeName`: 필수, 공백 불가, 최대 255자
 - `totalAmount`: 필수, 0 이상의 값
-- `categoryCode`: 필수, 공백 불가 (FRANCHISE/LOCAL/MARKET)
+- `storeName`: 선택사항, OCR 매칭 실패시 사용 (최대 255자)
+- `categoryCode`: 선택사항, OCR 매칭 실패시 필수 (FRANCHISE/LOCAL/MARKET)
 - `imagePath`: 선택사항
-- `ocrRaw`: 선택사항
+- `ocrRaw`: 선택사항, 가게 자동 매칭에 사용
+
+**⭐ 자동 가게 매칭 프로세스:**
+1. OCR 텍스트(`ocrRaw`)에서 가게명 추출
+2. DB 가게 사전과 매칭 (정확 매칭 → 부분 매칭 → 퍼지 매칭)
+3. 매칭 성공: 가게의 카테고리와 경험치 배수 자동 적용
+4. 매칭 실패: 요청 데이터 사용 또는 `NEED_REVIEW` 상태
 
 **Response:**
 ```json
@@ -82,7 +88,9 @@ Form Data:
   "receiptId": "long",
   "expAwarded": "integer",
   "totalExpAfter": "long", 
-  "levelAfter": "integer"
+  "levelAfter": "integer",
+  "matchedStoreName": "string",  // 매칭된 가게명 (새로 추가)
+  "confidence": "double"         // 매칭 신뢰도 0.0~1.0 (새로 추가)
 }
 ```
 
@@ -91,6 +99,8 @@ Form Data:
 - `expAwarded`: 이번에 지급된 경험치
 - `totalExpAfter`: 지급 후 총 누적 경험치
 - `levelAfter`: 지급 후 사용자 레벨
+- `matchedStoreName`: 자동 매칭된 가게명 (매칭 성공시)
+- `confidence`: 가게 매칭 신뢰도 (0.85 이상이면 자동 적용)
 
 ---
 
@@ -178,9 +188,31 @@ Form Data:
 
 ---
 
-## 영수증 엔티티 구조
+## 가게 매칭 시스템
 
-### Receipt
+### 경험치 계산 규칙
+**카테고리별 경험치 배수:**
+- `FRANCHISE`: 1.0배 (프랜차이즈)
+- `LOCAL`: 1.5배 (지역상점)  
+- `MARKET`: 2.0배 (전통시장/특산물)
+
+**계산 공식:** `경험치 = floor(결제금액 × 카테고리 배수 / 100)`
+
+### 가게 매칭 로직
+1. **정확 매칭**: 가게명/별칭과 완전 일치 (신뢰도 0.99)
+2. **부분 매칭**: 가게명/별칭 부분 포함 (신뢰도 0.95/0.93)
+3. **퍼지 매칭**: 유사도 계산 (임계값 0.88 이상)
+
+### 매칭 우선순위
+1. 신뢰도 높은 순
+2. 매칭된 텍스트 길이 긴 순 (더 구체적)
+3. 브랜드 정보가 있는 가게 우선
+
+---
+
+## 엔티티 구조
+
+### Receipt (업데이트됨)
 ```json
 {
   "id": "long",
@@ -193,7 +225,9 @@ Form Data:
   "ocrRaw": "string",
   "status": "string",
   "recognizedAt": "string",
-  "createdAt": "string"
+  "createdAt": "string",
+  "matchedStoreId": "long",
+  "storeNameConfidence": "double"
 }
 ```
 
@@ -206,9 +240,33 @@ Form Data:
 - `expAwarded`: 지급된 경험치
 - `imagePath`: 영수증 이미지 경로 (최대 512자)
 - `ocrRaw`: OCR 원본 데이터 (JSON 형태)
-- `status`: 처리 상태 (기본값: "DONE")
+- `status`: 처리 상태 ("DONE" / "NEED_REVIEW")
 - `recognizedAt`: OCR 인식 시간
 - `createdAt`: 영수증 생성 시간
+- `matchedStoreId`: 매칭된 가게 ID (새로 추가)
+- `storeNameConfidence`: 가게 매칭 신뢰도 (새로 추가)
+
+### Store
+```json
+{
+  "id": "long",
+  "name": "string",
+  "normalizedName": "string",
+  "categoryCode": "string",
+  "brand": "string",
+  "createdAt": "string"
+}
+```
+
+### Category
+```json
+{
+  "code": "string",
+  "name": "string", 
+  "weight": "double",
+  "createdAt": "string"
+}
+```
 
 ### User
 ```json
