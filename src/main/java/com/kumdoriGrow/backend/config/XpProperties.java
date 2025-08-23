@@ -1,13 +1,11 @@
 package com.kumdoriGrow.backend.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
 @ConfigurationProperties(prefix = "kumdori.xp")
 public class XpProperties {
     private Map<String, BigDecimal> weights = new HashMap<>();
