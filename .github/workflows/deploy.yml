@@ -29,6 +29,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: .                   # ✅ Dockerfile이 루트에 있으므로 현재 디렉토리
+          file: ./Dockerfile           # ✅ 루트에 있는 Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/kumdorigrow:latest
+          platforms: linux/amd64,linux/arm64
+          tags: ghcr.io/lyj0304/kumdorigrow:latest
