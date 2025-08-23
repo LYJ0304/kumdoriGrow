@@ -5,6 +5,8 @@ import com.kumdoriGrow.backend.api.receipt.dto.CreateReceiptReq;
 import com.kumdoriGrow.backend.api.receipt.dto.CreateReceiptRes;
 import com.kumdoriGrow.backend.api.receipt.dto.ReceiptResponse;
 import com.kumdoriGrow.backend.api.receipt.dto.XpRes;
+import com.kumdoriGrow.backend.domain.store.StoreMatchResult;
+import com.kumdoriGrow.backend.domain.store.StoreResolver;
 import com.kumdoriGrow.backend.infra.ocr.ClovaOcrClient;
 import com.kumdoriGrow.backend.infra.ocr.dto.OcrFieldModels;
 import com.kumdoriGrow.backend.infra.ocr.dto.OcrResult;
@@ -16,51 +18,81 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class ReceiptService {
 
     private final ReceiptRepository receiptRepository;
     private final ExpCalculator expCalculator;
     private final UserRepository userRepository;
     private final ClovaOcrClient ocrClient;
+    private final StoreResolver storeResolver;
 
     // 단순 파서라면 new로 써도 되지만, 재사용/테스트 편의 위해 @Component로 빼도 OK
     private final ReceiptParser parser = new ReceiptParser();
 
-    public ReceiptService(ReceiptRepository receiptRepository,
-                          ExpCalculator expCalculator,
-                          UserRepository userRepository,
-                          ClovaOcrClient ocrClient) {          // ← ocrClient 주입 추가
-        this.receiptRepository = receiptRepository;
-        this.expCalculator = expCalculator;
-        this.userRepository = userRepository;
-        this.ocrClient = ocrClient;
-    }
-
-    // 금액×가중치→경험치 계산해서 저장
+    // OCR 텍스트 기반 자동 가게 매칭 및 경험치 계산
     @Transactional
     public CreateReceiptRes create(CreateReceiptReq req) {
         userRepository.findById(req.userId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + req.userId()));
 
-        int exp = expCalculator.calcExp(req.totalAmount(), req.categoryCode());
-
         Receipt r = new Receipt();
         r.setUserId(req.userId());
-        r.setStoreName(req.storeName());
         r.setTotalAmount(req.totalAmount());
-        r.setCategoryCode(req.categoryCode());
-        r.setExpAwarded(exp);
         r.setImagePath(req.imagePath());
         r.setOcrRaw(req.ocrRaw());
-        r.setStatus("DONE");
-
+        
+        // 1. OCR 텍스트로 가게 매칭 시도
+        StoreMatchResult matchResult = storeResolver.resolve(req.ocrRaw());
+        
+        String finalCategoryCode;
+        String finalStoreName;
+        
+        if (matchResult.isMatched() && matchResult.getConfidence() >= 0.85) {
+            // 매칭 성공: DB에서 찾은 가게 정보 사용
+            log.info("Store matched: {} (confidence: {})", 
+                matchResult.getStore().getName(), matchResult.getConfidence());
+            
+            finalStoreName = matchResult.getStore().getName();
+            finalCategoryCode = matchResult.getStore().getCategoryCode();
+            r.setMatchedStoreId(matchResult.getStore().getId());
+            r.setStoreNameConfidence(matchResult.getConfidence());
+            r.setStatus("DONE");
+            
+        } else {
+            // 매칭 실패: 요청 데이터 사용 또는 수동 리뷰 필요
+            finalStoreName = req.storeName() != null ? req.storeName() : "미확인 가게";
+            finalCategoryCode = req.categoryCode();
+            
+            if (req.categoryCode() == null || req.categoryCode().trim().isEmpty()) {
+                // 카테고리도 없으면 수동 리뷰 필요
+                r.setStatus("NEED_REVIEW");
+                finalCategoryCode = "LOCAL"; // 기본값
+                log.warn("Store matching failed and no category provided. Receipt needs manual review.");
+            } else {
+                r.setStatus("DONE");
+                log.info("Using provided store info: {} ({})", finalStoreName, finalCategoryCode);
+            }
+        }
+        
+        r.setStoreName(finalStoreName);
+        r.setCategoryCode(finalCategoryCode);
+        
+        // 2. 경험치 계산
+        int exp = expCalculator.calcExp(req.totalAmount(), finalCategoryCode);
+        r.setExpAwarded(exp);
+        
         receiptRepository.save(r);
 
+        // 3. 사용자 총 경험치 및 레벨 계산
         long total = receiptRepository.sumExpByUser(req.userId());
         int level = expCalculator.levelOf(total);
 
-        return new CreateReceiptRes(r.getId(), exp, total, level);
+        return new CreateReceiptRes(r.getId(), exp, total, level, 
+            matchResult.isMatched() ? matchResult.getStore().getName() : null,
+            matchResult.getConfidence());
     }
 
     // 누적 경험치/레벨
