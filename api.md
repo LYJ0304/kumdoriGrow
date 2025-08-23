@@ -326,6 +326,11 @@ Form Data:
 
 **계산 공식:** `경험치 = floor(결제금액 × 카테고리 배수 / 100 * 1.5)`
 
+**레벨 시스템:**
+- 레벨 1~5: 고정 구간 (100, 500, 1000, 2000, 5000 경험치)
+- 레벨 6~30: 1000 경험치당 1레벨씩 상승
+- **최대 레벨**: 30레벨 (30,000 경험치)
+
 **실제 테스트 결과:**
 - LOCAL 5000원: `floor(5000 × 1.0 × 1.5 / 100)` = 75 경험치 ✅
 - FRANCHISE 8500원: `floor(8500 × 0.6 × 1.5 / 100)` = 85 경험치 ✅
@@ -526,3 +531,242 @@ curl -X GET http://3.36.54.191:8082/api/receipts/users/999/xp
 - 🟢 **레벨업 로직 정상**  
 - 🟡 **OCR 기능 비활성화** (향후 활성화 예정)
 - 🔴 **사용자 생성 500 에러** (중복 제약조건 문제)
+
+---
+
+## 포인트 박스 시스템 🎁
+
+### 개요
+사용자가 레벨업할 때(5의 배수) 포인트 박스를 자동으로 개봉하여 포인트를 지급하는 보상 시스템입니다.
+
+### 보상 규칙
+- **개봉 조건**: 레벨이 5의 배수(5, 10, 15, 20...)가 될 때마다 자동 개봉
+- **중복 방지**: 같은 레벨로는 1회만 보상 지급 (멱등성 보장)
+- **확률표**:
+  - 10,000p: 1%
+  - 5,000p: 2%  
+  - 3,000p: 5%
+  - 1,000p: 8%
+  - 500p: 14%
+  - 100p: 30%
+  - 50p: 40%
+
+### 보상 API
+
+#### 1. 사용자 포인트 요약 조회
+사용자의 총 경험치, 총 보상 포인트, 보상 받은 횟수를 조회합니다.
+
+**Endpoint:** `GET /api/rewards/summary`
+
+**Query Parameters:**
+- `userId`: 사용자 ID (required)
+
+**Response:**
+```json
+{
+  "totalExp": "long",        // 영수증으로 얻은 총 경험치
+  "totalRewardPoints": "long", // 보상으로 받은 총 포인트
+  "rewardCount": "long"      // 보상 받은 총 횟수
+}
+```
+
+**예시:**
+```bash
+curl -X GET "http://3.36.54.191:8082/api/rewards/summary?userId=999"
+```
+
+---
+
+#### 2. 보상 히스토리 조회
+사용자의 포인트 박스 개봉 이력을 페이징으로 조회합니다.
+
+**Endpoint:** `GET /api/rewards/history`
+
+**Query Parameters:**
+- `userId`: 사용자 ID (required)
+- `page`: 페이지 번호 (기본값: 0)
+- `size`: 페이지 크기 (기본값: 10, 최대: 100)
+
+**Response:**
+```json
+{
+  "content": [
+    {
+      "id": "long",           // 보상 레코드 ID
+      "points": "integer",    // 받은 포인트
+      "receivedAt": "string", // 보상 받은 시간 (ISO 8601)
+      "snapshot": "string"    // JSON 스냅샷 (레벨, 확률, 난수값 등)
+    }
+  ],
+  "pageable": { /* 페이징 정보 */ },
+  "totalElements": "long",
+  "totalPages": "integer",
+  "last": "boolean",
+  "first": "boolean"
+}
+```
+
+**예시:**
+```bash
+curl -X GET "http://3.36.54.191:8082/api/rewards/history?userId=999&page=0&size=5"
+```
+
+---
+
+#### 3. 포인트 박스 확률표 조회
+포인트 박스의 확률표를 조회합니다.
+
+**Endpoint:** `GET /api/rewards/probabilities`
+
+**Response:**
+```json
+{
+  "probabilities": [
+    {
+      "points": 10000,
+      "weight": 0.01
+    },
+    {
+      "points": 5000,
+      "weight": 0.02
+    },
+    // ... 전체 확률표
+  ],
+  "totalWeight": 1.0,
+  "note": "Actual probability = weight / totalWeight"
+}
+```
+
+**예시:**
+```bash
+curl -X GET "http://3.36.54.191:8082/api/rewards/probabilities"
+```
+
+---
+
+#### 4. 포인트 박스 강제 개봉 (테스트 전용)
+테스트 환경에서만 사용 가능한 포인트 박스 강제 개봉 API입니다.
+
+**Endpoint:** `POST /api/rewards/open`
+
+**⚠️ 제약사항:** 
+- `spring.profiles.active=test` 환경에서만 동작
+- 운영환경에서는 404 에러 발생
+
+**Content-Type:** `application/json`
+
+**Request:**
+```json
+{
+  "userId": "long",
+  "testSeed": "long"  // 선택사항, 테스트용 시드값
+}
+```
+
+**Response:**
+```json
+{
+  "points": "integer",  // 당첨된 포인트
+  "level": "integer",   // null (강제 개봉이므로)
+  "roll": "double"      // 사용된 난수값 (0.0~1.0)
+}
+```
+
+**예시:**
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{
+  "userId": 999,
+  "testSeed": 12345
+}' http://localhost:8082/api/rewards/open
+```
+
+---
+
+### 자동 보상 시스템
+
+#### 레벨업 시 자동 개봉
+영수증 등록 API(`POST /api/receipts`)에서 레벨업이 발생하면:
+1. 새 레벨이 5의 배수인지 확인
+2. 해당 레벨로 이미 보상받았는지 확인 (중복 방지)
+3. 조건 만족 시 포인트 박스 자동 개봉
+4. 보상 내역을 `receipts` 테이블에 기록
+
+#### 보상 기록 방식
+포인트 박스 보상은 `receipts` 테이블을 재사용하여 기록됩니다:
+
+```json
+{
+  "user_id": 999,
+  "store_name": "POINT_BOX",
+  "total_amount": 1000,        // 당첨 포인트
+  "category_code": "REWARD",
+  "exp_awarded": 0,
+  "status": "REWARD",
+  "recognized_at": "2025-08-23T10:30:00Z",
+  "ocr_raw": {                 // JSON 스냅샷
+    "type": "POINT_REWARD",
+    "level": 5,
+    "roll": 0.7234,
+    "weights": [...],
+    "normalized": [...],
+    "version": "v1"
+  }
+}
+```
+
+---
+
+### 에러 응답
+
+**400 Bad Request:**
+```json
+{
+  "timestamp": "2025-08-23T10:30:00.000Z",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Invalid userId",
+  "path": "/api/rewards/summary"
+}
+```
+
+**403 Forbidden (테스트 API):**
+```json
+{
+  "timestamp": "2025-08-23T10:30:00.000Z",
+  "status": 403,
+  "error": "Forbidden",
+  "message": "This endpoint is only available in test profile",
+  "path": "/api/rewards/open"
+}
+```
+
+**409 Conflict:**
+```json
+{
+  "timestamp": "2025-08-23T10:30:00.000Z", 
+  "status": 409,
+  "error": "Conflict",
+  "message": "Reward already granted for this level",
+  "path": "/api/rewards/open"
+}
+```
+
+---
+
+### 검증 시나리오
+
+#### 레벨업 테스트
+1. 사용자 경험치를 5레벨(5000경험치)까지 올리기
+2. `GET /api/rewards/history`로 보상 1건 확인
+3. 10레벨까지 올리기  
+4. `GET /api/rewards/history`로 보상 2건 확인
+5. `GET /api/rewards/summary`로 총합 확인
+
+#### 테스트 API 검증
+1. 테스트 환경에서 `POST /api/rewards/open` 3회 호출
+2. `GET /api/rewards/history`로 3건 확인
+3. 운영환경에서 같은 API 호출 시 404 에러 확인
+
+#### 확률 검증
+1. `GET /api/rewards/probabilities`로 확률표 조회
+2. 모든 확률의 합이 1.0인지 확인
