@@ -1,11 +1,20 @@
 package com.kumdoriGrow.backend.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
-@Component
-@ConfigurationProperties(prefix = "ocr.clova")
+@ConfigurationProperties(prefix = "ocr")
 public record OcrProperties(
-        String url,
-        String secret
-) {}
+        boolean enabled,
+        String apiUrl,
+        String apiKey
+) {
+    public OcrProperties {
+        // 기본값 설정 - null-safe 처리
+        if (apiUrl == null) {
+            apiUrl = "";
+        }
+        if (apiKey == null) {
+            apiKey = "";
+        }
+    }
+}
