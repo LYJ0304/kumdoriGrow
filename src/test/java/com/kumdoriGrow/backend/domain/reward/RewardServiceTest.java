@@ -27,7 +27,7 @@ class RewardServiceTest {
     
     @BeforeEach
     void setUp() {
-        rewardService = new RewardService(receiptRepository, objectMapper);
+        rewardService = new RewardService(receiptRepository);
     }
     
     @Test
