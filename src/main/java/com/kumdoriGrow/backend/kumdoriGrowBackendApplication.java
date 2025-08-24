@@ -14,4 +14,5 @@ public class kumdoriGrowBackendApplication {
 		SpringApplication.run(kumdoriGrowBackendApplication.class, args);
 	}
 
+
 }
