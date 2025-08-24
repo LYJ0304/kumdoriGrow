@@ -55,3 +55,33 @@ Daemon will be stopped at the end of the build
 2025-08-24T12:01:34.260+09:00  INFO 28302 --- [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
 2025-08-24T12:01:34.260+09:00  INFO 28302 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
 2025-08-24T12:01:34.271+09:00  INFO 28302 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 11 ms
+2025-08-24T12:17:13.784+09:00  WARN 28302 --- [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=2m12s671ms).
+2025-08-24T12:25:00.247+09:00  INFO 28302 --- [nio-8080-exec-6] c.k.b.domain.receipt.ReceiptService      : Using provided store info: 테스트 로컬 가게 (LOCAL)
+2025-08-24T12:26:12.778+09:00  INFO 28302 --- [io-8080-exec-10] c.k.b.domain.receipt.ReceiptService      : Using provided store info: 가게2 (LOCAL)
+2025-08-24T12:26:12.826+09:00  INFO 28302 --- [nio-8080-exec-2] c.k.b.domain.receipt.ReceiptService      : Using provided store info: 가게3 (LOCAL)
+2025-08-24T12:26:12.861+09:00  INFO 28302 --- [nio-8080-exec-4] c.k.b.domain.receipt.ReceiptService      : Using provided store info: 가게4 (LOCAL)
+2025-08-24T12:26:12.898+09:00  INFO 28302 --- [nio-8080-exec-6] c.k.b.domain.receipt.ReceiptService      : Using provided store info: 가게5 (LOCAL)
+2025-08-24T12:26:12.935+09:00  INFO 28302 --- [nio-8080-exec-8] c.k.b.domain.receipt.ReceiptService      : Using provided store info: 가게6 (LOCAL)
+2025-08-24T12:26:12.968+09:00  INFO 28302 --- [io-8080-exec-10] c.k.b.domain.receipt.ReceiptService      : Using provided store info: 가게7 (LOCAL)
+2025-08-24T12:26:13.001+09:00  INFO 28302 --- [nio-8080-exec-2] c.k.b.domain.receipt.ReceiptService      : Using provided store info: 가게8 (LOCAL)
+2025-08-24T12:26:13.035+09:00  INFO 28302 --- [nio-8080-exec-4] c.k.b.domain.receipt.ReceiptService      : Using provided store info: 가게9 (LOCAL)
+2025-08-24T12:26:13.068+09:00  INFO 28302 --- [nio-8080-exec-6] c.k.b.domain.receipt.ReceiptService      : Using provided store info: 가게10 (LOCAL)
+2025-08-24T12:26:41.094+09:00  INFO 28302 --- [nio-8080-exec-8] c.k.b.domain.receipt.ReceiptService      : Using provided store info: 큰가게 (LOCAL)
+2025-08-24T12:27:45.686+09:00  INFO 28302 --- [io-8080-exec-10] c.k.b.domain.receipt.ReceiptService      : Using provided store info: 마지막가게 (LOCAL)
+2025-08-24T12:27:45.745+09:00  INFO 28302 --- [io-8080-exec-10] c.k.backend.domain.reward.RewardService  : Point box opened for user 1 at level 5: 1000 points awarded
+2025-08-24T12:27:45.745+09:00  INFO 28302 --- [io-8080-exec-10] c.k.b.domain.reward.LevelUpEventHandler  : Level-up reward processed: user=1, level=5, points=1000
+2025-08-24T12:29:57.238+09:00  WARN 28302 --- [nio-8080-exec-4] ration$PageModule$WarningLoggingModifier : Serializing PageImpl instances as-is is not supported, meaning that there is no guarantee about the stability of the resulting JSON structure!
+	For a stable JSON structure, please use Spring Data's PagedModel (globally via @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO))
+	or Spring HATEOAS and Spring Data's PagedResourcesAssembler as documented in https://docs.spring.io/spring-data/commons/reference/repositories/core-extensions.html#core.web.pageables.
+
+2025-08-24T12:30:59.315+09:00  INFO 28302 --- [nio-8080-exec-8] c.k.b.domain.receipt.ReceiptService      : Using provided store info: 대형마트1 (MARKET)
+2025-08-24T12:30:59.368+09:00  INFO 28302 --- [io-8080-exec-10] c.k.b.domain.receipt.ReceiptService      : Using provided store info: 대형마트2 (MARKET)
+2025-08-24T12:30:59.407+09:00  INFO 28302 --- [nio-8080-exec-2] c.k.b.domain.receipt.ReceiptService      : Using provided store info: 대형마트3 (MARKET)
+2025-08-24T12:30:59.414+09:00  INFO 28302 --- [nio-8080-exec-2] c.k.backend.domain.reward.RewardService  : Point box opened for user 1 at level 30: 100 points awarded
+2025-08-24T12:30:59.414+09:00  INFO 28302 --- [nio-8080-exec-2] c.k.b.domain.reward.LevelUpEventHandler  : Level-up reward processed: user=1, level=30, points=100
+2025-08-24T12:30:59.449+09:00  INFO 28302 --- [nio-8080-exec-4] c.k.b.domain.receipt.ReceiptService      : Using provided store info: 대형마트4 (MARKET)
+2025-08-24T12:30:59.485+09:00  INFO 28302 --- [nio-8080-exec-6] c.k.b.domain.receipt.ReceiptService      : Using provided store info: 대형마트5 (MARKET)
+2025-08-24T12:49:49.100+09:00  WARN 28302 --- [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=9m35s157ms).
+2025-08-24T13:01:57.647+09:00  WARN 28302 --- [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=4m8s481ms).
+2025-08-24T13:16:03.779+09:00  WARN 28302 --- [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=14m6s136ms).
+2025-08-24T13:17:48.297+09:00  WARN 28302 --- [l-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=1m44s519ms).
