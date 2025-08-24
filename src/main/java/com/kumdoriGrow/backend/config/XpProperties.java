@@ -10,10 +10,25 @@ import java.util.Map;
 public class XpProperties {
     private Map<String, BigDecimal> weights = new HashMap<>();
 
-    public Map<String, BigDecimal> getWeights() { return weights; }
-    public void setWeights(Map<String, BigDecimal> weights) { this.weights = weights; }
+    // 기본 생성자에서 기본값 설정 (부팅 안정성 보장)
+    public XpProperties() {
+        weights = new HashMap<>();
+        // 기본 가중치 설정
+        weights.put("FRANCHISE", new BigDecimal("0.6"));
+        weights.put("LOCAL", new BigDecimal("1.0"));
+        weights.put("MARKET", new BigDecimal("2.0"));
+    }
+
+    public Map<String, BigDecimal> getWeights() { 
+        return weights != null ? weights : new HashMap<>(); 
+    }
+    
+    public void setWeights(Map<String, BigDecimal> weights) { 
+        this.weights = weights != null ? weights : new HashMap<>(); 
+    }
 
     public BigDecimal weightOf(String categoryCodeUpper) {
-        return weights.getOrDefault(categoryCodeUpper, BigDecimal.ONE); // 기본 1.0배
+        Map<String, BigDecimal> safeWeights = getWeights();
+        return safeWeights.getOrDefault(categoryCodeUpper, BigDecimal.ONE); // 기본 1.0배
     }
 }
