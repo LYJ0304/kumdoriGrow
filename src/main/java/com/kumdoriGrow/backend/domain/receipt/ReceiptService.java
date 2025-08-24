@@ -15,6 +15,7 @@ import com.kumdoriGrow.backend.infra.ocr.dto.OcrResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,18 +24,36 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Optional;
+
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ReceiptService {
 
     private final ReceiptRepository receiptRepository;
     private final ExpCalculator expCalculator;
     private final UserRepository userRepository;
     private final StoreResolver storeResolver;
-    private final ClovaOcrClient ocrClient;
+    private final Optional<ClovaOcrClient> ocrClient;
     private final OcrProperties ocrProperties;
     private final ApplicationEventPublisher eventPublisher;
+
+    public ReceiptService(
+            ReceiptRepository receiptRepository,
+            ExpCalculator expCalculator,
+            UserRepository userRepository,
+            StoreResolver storeResolver,
+            @Autowired(required = false) ClovaOcrClient ocrClient,
+            OcrProperties ocrProperties,
+            ApplicationEventPublisher eventPublisher) {
+        this.receiptRepository = receiptRepository;
+        this.expCalculator = expCalculator;
+        this.userRepository = userRepository;
+        this.storeResolver = storeResolver;
+        this.ocrClient = Optional.ofNullable(ocrClient);
+        this.ocrProperties = ocrProperties;
+        this.eventPublisher = eventPublisher;
+    }
 
     // OCR 텍스트 기반 자동 가게 매칭 및 경험치 계산
     @Transactional
@@ -154,8 +173,8 @@ public class ReceiptService {
         }
         
         // 3) OCR 비활성화 시 더미 응답 반환
-        if (!ocrProperties.enabled()) {
-            log.info("[OCR] OCR is disabled, returning dummy response");
+        if (!ocrProperties.enabled() || ocrClient.isEmpty()) {
+            log.info("[OCR] OCR is disabled or client not available, returning dummy response");
             return new ReceiptResponse("더미_가게명", 5000, "더미_OCR_텍스트", 0.95);
         }
         
@@ -169,8 +188,8 @@ public class ReceiptService {
             log.info("[OCR] Calling OCR API - endpoint: {}, hasSecret: {}, payloadFormat: {}, bytes: {}",
                     endpoint, hasSecret, payloadFormat, bytesLength);
             
-            // 5) OCR 실행
-            OcrResult ocrResult = ocrClient.request(file);
+            // 5) OCR 실행 - Optional 처리
+            OcrResult ocrResult = ocrClient.get().request(file);
             String ocrText = extractOcrText(ocrResult);
             
             log.info("[OCR] OCR processing completed successfully");
