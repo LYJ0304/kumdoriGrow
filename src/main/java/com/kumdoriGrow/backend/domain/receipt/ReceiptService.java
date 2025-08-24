@@ -6,7 +6,7 @@ import com.kumdoriGrow.backend.api.receipt.dto.CreateReceiptRes;
 import com.kumdoriGrow.backend.api.receipt.dto.ReceiptResponse;
 import com.kumdoriGrow.backend.api.receipt.dto.XpRes;
 import com.kumdoriGrow.backend.config.OcrProperties;
-import com.kumdoriGrow.backend.domain.reward.RewardService;
+// import com.kumdoriGrow.backend.domain.reward.RewardService;
 import com.kumdoriGrow.backend.domain.store.StoreMatchResult;
 import com.kumdoriGrow.backend.domain.store.StoreResolver;
 import com.kumdoriGrow.backend.domain.user.UserRepository;
@@ -15,6 +15,7 @@ import com.kumdoriGrow.backend.infra.ocr.dto.OcrResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.transaction.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -33,7 +34,7 @@ public class ReceiptService {
     private final StoreResolver storeResolver;
     private final ClovaOcrClient ocrClient;
     private final OcrProperties ocrProperties;
-    private final RewardService rewardService;
+    private final ApplicationEventPublisher eventPublisher;
 
     // OCR 텍스트 기반 자동 가게 매칭 및 경험치 계산
     @Transactional
@@ -102,8 +103,10 @@ public class ReceiptService {
             int oldLevel = expCalculator.levelOf(oldTotal);
             int newLevel = expCalculator.levelOf(newTotal);
             
-            // 4. 레벨업 시 포인트 박스 개봉 체크
-            var boxResult = rewardService.openBoxIfEligible(req.userId(), newLevel, null);
+            // 4. 레벨업 시 이벤트 발행 (포인트 박스 개봉 트리거)
+            if (newLevel > oldLevel) {
+                eventPublisher.publishEvent(new LevelUpEvent(req.userId(), oldLevel, newLevel, r.getId()));
+            }
 
             return new CreateReceiptRes(r.getId(), exp, newTotal, newLevel, 
                 matchResult.isMatched() ? matchResult.getStore().getName() : null,
