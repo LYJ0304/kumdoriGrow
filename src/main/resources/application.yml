@@ -38,7 +38,7 @@ flyway:
   enabled: false
 
 ocr:
-  enabled: ${OCR_ENABLED:false}
+  enabled: ${OCR_ENABLED:true}
   api-url: ${CLOVA_OCR_URL:}
   api-key: ${CLOVA_OCR_SECRET:}
 
