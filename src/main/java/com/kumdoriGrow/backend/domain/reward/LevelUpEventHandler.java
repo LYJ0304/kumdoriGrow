@@ -3,6 +3,7 @@ package com.kumdoriGrow.backend.domain.reward;
 import com.kumdoriGrow.backend.domain.receipt.LevelUpEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LevelUpEventHandler {
     
+    @Lazy
     private final RewardService rewardService;
     
     @EventListener

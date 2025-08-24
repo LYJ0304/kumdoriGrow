@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Component
-@ConditionalOnProperty(name = "ocr.enabled", havingValue = "true")
+@ConditionalOnProperty(prefix = "ocr", name = "enabled", havingValue = "true", matchIfMissing = false)
 @RequiredArgsConstructor
 @Slf4j
 public class ClovaOcrClient {

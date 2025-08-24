@@ -20,6 +20,8 @@ spring:
       ddl-auto: create-drop
     open-in-view: false
     database-platform: org.hibernate.dialect.H2Dialect
+  main:
+    allow-circular-references: true
 
 # (선택) 헬스체크용 액추에이터를 쓰면 노출
 management:
@@ -83,6 +85,8 @@ spring:
       ddl-auto: none # 프로덕션 환경에서는 'none'을 권장
     open-in-view: false
     database-platform: org.hibernate.dialect.MySQLDialect
+  main:
+    allow-circular-references: true
 server:
   port: 8080 # 컨테이너 내부 포트는 8080으로 유지
 
